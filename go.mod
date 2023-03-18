@@ -1,3 +1,3 @@
-module gitlab.com/prithvivishak/actor
+module gitlab.com/prithvivishak/goactor
 
 go 1.20
