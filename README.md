@@ -82,6 +82,7 @@ loop:
 | Function | Description |
 | --- | --- |
 | `Inbox() Inbox` | Returns the mailbox of the actor. |
+| `ParentInbox() Inbox` | Returns the mailbox of the actor's creator. |
 | `LaunchAsChild(Actor, string) (Inbox, error)` | Launches an actor as a nested actor, returning its mailbox for custom use.  |
 | `Initialize() error` | Use this function to provide your own initialization steps. |
 | `IsStopping() bool` | Returns `true` if the actor is in the process of stopping. |

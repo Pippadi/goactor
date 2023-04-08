@@ -6,6 +6,7 @@ type Message func(a Actor) error
 
 type Actor interface {
 	Inbox() Inbox
+	ParentInbox() Inbox
 	LaunchAsChild(Actor, string) (Inbox, error)
 	Initialize() error
 	IsStopping() bool
