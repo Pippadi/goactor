@@ -35,8 +35,11 @@ func (b *Base) HandleError(err error) error {
 
 func (b *Base) SpawnNested(a Actor, id string) (Inbox, error) {
 	ibox, err := launch(a, b.Inbox(), id, false)
+	if err != nil {
+		return nil, err
+	}
 	b.registerNested(a)
-	return ibox, err
+	return ibox, nil
 }
 
 func (b *Base) initialize(creatorInbox Inbox, id string, amRoot bool) Inbox {

@@ -40,7 +40,11 @@ func run(a Actor) {
 
 func initialize(a Actor, creatorInbox Inbox, id string, asRoot bool) (Inbox, error) {
 	ibox := a.initialize(creatorInbox, id, asRoot)
-	return ibox, a.Initialize()
+	err := a.Initialize()
+	if err != nil {
+		return nil, err
+	}
+	return ibox, nil
 }
 
 func finalize(a Actor) {
