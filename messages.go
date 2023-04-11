@@ -15,6 +15,6 @@ func SendErrorMsg(destination Inbox, err error) {
 
 func sendFarewell(destination Inbox, myInbox Inbox, reason error) {
 	destination <- func(a Actor) error {
-		return unregisterNested(a, myInbox, reason)
+		return a.HandleLastMsg(a.unregisterNested(myInbox), reason)
 	}
 }

@@ -22,7 +22,6 @@ type Actor interface {
 	okToStop() bool
 
 	registerNested(Actor)
-	stopNested(Inbox)
 	stopAllNested()
 	unregisterNested(Inbox) Actor
 }
