@@ -17,11 +17,11 @@ The two primary entities in this package are the `Actor` interface and `Base` st
 | Message | Description |
 | --- | --- |
 | `SendStopMsg(Inbox)` | Requests the actor identified by `Inbox` to stop. |
-| `SendErrorReportMsg(Inbox, error)` | Reports an `error` to the actor identified by `Inbox`. |
+| `SendErrorMsg(Inbox, error)` | Reports an `error` to the actor identified by `Inbox`. |
 
 Every spawned actor sequentially processes the received messages in First-In-First-Out order. Therefore, mutexes are not necessary.
 
-The main application spawns an actor via `LaunchAsRoot` function. Such an actor is a *Root* actor. Any actor can launch another actor via receiver method `LaunchAsChild`. In this case, the former is the *creator* actor; and the latter is the *nested* actor.
+The main application spawns an actor via `SpawnRoot` function. Such an actor is a *Root* actor. Any actor can launch another actor via receiver method `SpawnNested`. In this case, the former is the *creator* actor; and the latter is the *nested* actor.
 
 ## Tree-based messaging
 
@@ -29,11 +29,11 @@ Built with simplicity in mind, an actor can normally communicate with only its c
 
 ```mermaid
 graph TD
-    main[main.go] --> |LaunchAsRoot| actorA[ActorA]
-    actorA --> |LaunchAsChild| actorB[ActorB]
-    actorA --> |LaunchAsChild| actorC[ActorC]
-    actorC --> |LaunchAsChild| actorD[ActorD]
-    actorC --> |LaunchAsChild| actorE[ActorE]
+    main[main.go] --> |SpawnRoot| actorA[ActorA]
+    actorA --> |SpawnNested| actorB[ActorB]
+    actorA --> |SpawnNested| actorC[ActorC]
+    actorC --> |SpawnNested| actorD[ActorD]
+    actorC --> |SpawnNested| actorE[ActorE]
 ```
 
 Messages inbound to an actor are to defined along with the actor. Messages outbound to a creator, i.e. events, are done via interfaces.
@@ -67,7 +67,7 @@ func main() {
 	signal.Notify(osSignal, os.Interrupt, syscall.SIGTERM)
 
 	myactor := new(MyActor) // Initialize however you see fit.
-	rootDone, rootInbox, err := actor.LaunchAsRoot(myactor, "SomeIDHere")
+	rootDone, rootInbox, err := actor.SpawnRoot(myactor, "SomeIDHere")
 	if err != nil {
 		fmt.Println("FATAL: Could not launch the root actor.")
 		os.Exit(1)
@@ -89,11 +89,11 @@ loop:
 | Function | Description |
 | --- | --- |
 | `Inbox() Inbox` | Returns the mailbox of the actor. |
-| `ParentInbox() Inbox` | Returns the mailbox of the actor's creator. |
-| `LaunchAsChild(Actor, string) (Inbox, error)` | Launches an actor as a nested actor, returning its mailbox for custom use.  |
+| `CreatorInbox() Inbox` | Returns the mailbox of the actor's creator. |
+| `SpawnNested(Actor, string) (Inbox, error)` | Launches an actor as a nested actor, returning its mailbox for custom use.  |
 | `Initialize() error` | Use this function to provide your own initialization steps. |
 | `IsStopping() bool` | Returns `true` if the actor is in the process of stopping. |
 | `Finalize()` | Use this function to finalize whatever was done in `Initialize()`. |
 | `HandleError(error) error` | Override this function to provide your own error handling. Default is to propagate the error, hence stop. |
-| `HandleDisown(Actor, error) error` | Override this function to perform custom actions with the stopped nested actor. |
+| `HandleLastMsg(Actor, error) error` | Override this function to perform custom actions with the stopped nested actor. |
 | `ID() string` | Returns the string used to identify an actor upon launch. |

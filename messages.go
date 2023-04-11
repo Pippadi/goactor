@@ -7,14 +7,14 @@ func SendStopMsg(destination Inbox) {
 	}
 }
 
-func SendReportErrorMsg(destination Inbox, err error) {
+func SendErrorMsg(destination Inbox, err error) {
 	destination <- func(a Actor) error {
 		return a.HandleError(err)
 	}
 }
 
-func sendDisownMeMsg(destination Inbox, myInbox Inbox, reason error) {
+func sendFarewell(destination Inbox, myInbox Inbox, reason error) {
 	destination <- func(a Actor) error {
-		return disownChild(a, myInbox, reason)
+		return unregisterNested(a, myInbox, reason)
 	}
 }
