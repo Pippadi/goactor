@@ -12,13 +12,20 @@ this is my attempt to leverage Go's simple concurrency and channel-based messagi
 
 ## Description
 
-The two primary entities in this package are the `Actor` interface and `Base` struct. `Base` implements `Actor`, and needs only be embedded in a user's structs to make them actors. To be active, i.e. to be able to process messages, the actors themselves need to first be 'launched' either by the main application or by other actors.
+The two primary entities in this package are the `Actor` interface and `Base` struct. `Base` implements `Actor`, and needs only be embedded in a user's structs to make them actors. To be active, i.e. to be able to process messages, the actors themselves need to first be 'spawned' either by the main application or by other actors. This spawning process returns an `Inbox`, a kind of mailbox for an actor to receive messages. Two public messages are provided in this package:
 
-The main application launches an actor via `LaunchAsRoot` function. Such an actor is a *Root* actor. Any actor can launch another actor via receiver method `LaunchAsChild`. In this case, the former is the *creator* actor; and the latter is the *nested* actor.
+| Message | Description |
+| --- | --- |
+| `SendStopMsg(Inbox)` | Requests the actor identified by `Inbox` to stop. |
+| `SendErrorReportMsg(Inbox, error)` | Reports an `error` to the actor identified by `Inbox`. |
+
+Every spawned actor sequentially processes the received messages in First-In-First-Out order. Therefore, mutexes are not necessary.
+
+The main application spawns an actor via `LaunchAsRoot` function. Such an actor is a *Root* actor. Any actor can launch another actor via receiver method `LaunchAsChild`. In this case, the former is the *creator* actor; and the latter is the *nested* actor.
 
 ## Tree-based messaging
 
-Built with simplicity in mind, an actor can communicate with only its creator and nested actors _it_ creates. The main application always launches the `Root` actor, from which the tree proliferates.
+Built with simplicity in mind, an actor can normally communicate with only its creator and nested actors _it_ creates. The main application always launches the `Root` actor, from which the tree proliferates.
 
 ```mermaid
 graph TD
@@ -29,8 +36,8 @@ graph TD
     actorC --> |LaunchAsChild| actorE[ActorE]
 ```
 
-Messages inbound to an actor are defined along with the actor. Messages outbound to a creator, i.e. events, are done via interfaces.
-This leaves the creator actor to handle the events (implement the interfaces) as required.
+Messages inbound to an actor are to defined along with the actor. Messages outbound to a creator, i.e. events, are done via interfaces.
+This leaves the creator actor to handle the events (implement the interfaces) as desired.
 
 Error and stop propogation are two things done very easily with this kind of messaging. By default, an error encountered by a nested actor leads to the termination of the actor, and propogation of the error up the tree until the whole tree stops. This default behavior can be overridden as explained below.
 
