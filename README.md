@@ -72,11 +72,11 @@ func main() {
 		fmt.Println("FATAL: Could not launch the root actor.")
 		os.Exit(1)
 	}
-loop:
+
 	for {
 		select {
 		case <-rootDone:
-			break loop
+			return
 		case <-osSignal:
 			actor.SendStopMsg(rootInbox) // Allow the actor to stop gracefully, which sends above done.
 		}
