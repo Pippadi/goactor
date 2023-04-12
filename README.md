@@ -36,10 +36,10 @@ graph TD
     actorC --> |SpawnNested| actorE[ActorE]
 ```
 
-Messages inbound to an actor are to defined along with the actor. Messages outbound to a creator, i.e. events, are done via interfaces.
+Messages inbound to an actor are generally defined along with the actor. Messages outbound to a creator, i.e. events, are done via interfaces.
 This leaves the creator actor to handle the events (implement the interfaces) as desired.
 
-Error and stop propogation are two things done very easily with this kind of messaging. By default, an error encountered by a nested actor leads to the termination of the actor, and propogation of the error up the tree until the whole tree stops. This default behavior can be overridden as explained below.
+Error and stop propogation are two things done very easily with this kind of messaging. By default, an error encountered by a nested actor leads to the termination of the actor, and propogation of the error up the tree until the whole tree stops. This default behavior can be overridden as noted in the Actor API table below.
 
 ## Sample `main.go` implementation
 
@@ -88,12 +88,12 @@ func main() {
 
 | Function | Description |
 | --- | --- |
-| `Inbox() Inbox` | Returns the mailbox of the actor. |
-| `CreatorInbox() Inbox` | Returns the mailbox of the actor's creator. |
-| `SpawnNested(Actor, string) (Inbox, error)` | Launches an actor as a nested actor, returning its mailbox for custom use.  |
-| `Initialize() error` | Use this function to provide your own initialization steps. |
-| `IsStopping() bool` | Returns `true` if the actor is in the process of stopping. |
-| `Finalize()` | Use this function to finalize whatever was done in `Initialize()`. |
+| `Inbox() Inbox` | Returns the mailbox of the actor. Useful for sending a message to self; *e.g.* from a spawned go routine or a time.AfterFunc timer. |
+| `CreatorInbox() Inbox` | Returns the mailbox of the actor's creator. Useful for sending messages up the tree hierarchy. |
+| `SpawnNested(Actor, string) (Inbox, error)` | Launches an actor as a nested actor, returning its mailbox for custom use. |
+| `Initialize() error` | Use this function to provide your own initialization steps, including spawning other go routines. |
+| `IsStopping() bool` | Returns `true` if the actor is in the process of stopping. Use for custom actor termination logic. |
+| `Finalize()` | Use this function to finalize whatever was done in `Initialize()`. This is guaranteed to run even if `Initialize()` errors out. |
 | `HandleError(error) error` | Override this function to provide your own error handling. Default is to propagate the error, hence stop. |
-| `HandleLastMsg(Actor, error) error` | Override this function to perform custom actions with the stopped nested actor. |
-| `ID() string` | Returns the string used to identify an actor upon launch. |
+| `HandleLastMsg(Actor, error) error` | Override this function to perform custom actions with the stopped nested actor, including re-spawning it. |
+| `ID() string` | Returns the string used to identify an actor upon launch. Useful in `HandleLastMsg` and debugging statements. |
