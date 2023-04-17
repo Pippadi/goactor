@@ -1,7 +1,5 @@
 package actor
 
-import "log"
-
 var _ Actor = new(Base)
 
 type Base struct {
@@ -57,9 +55,6 @@ func (b *Base) finalize() {
 	if !b.amRoot {
 		sendFarewell(b.creatorInbox, b.Inbox(), b.stopReason)
 	} else {
-		if b.stopReason != nil {
-			log.Println("Stopped because", b.stopReason)
-		}
 		close(b.CreatorInbox())
 	}
 	close(b.Inbox())
